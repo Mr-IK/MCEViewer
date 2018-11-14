@@ -11,6 +11,7 @@ public class GUImanager extends JFrame {
         setTitle("MCEViewer");
         setSize(400,100);
         setLocationRelativeTo(null);
+        setResizable(false);
         System.out.println("DEBUG: create gui frame 50%");
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowClosing());

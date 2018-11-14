@@ -27,12 +27,13 @@ public class MainPanel extends JPanel implements ActionListener {
     JLabel money;
     JLabel nowupdate;
     JComboBox intCombo;
-    String[] ids = new String[54];
+    String[] ids = new String[56];
 
     String url1 = "http://man10.red/mce/";
     String url3 = "http://man10.red/mce/image/item";
     String url4 = ".png";
     String url2 = "/index.csv";
+    ConfigFileManager config;
 
     boolean nowrun = false;
 
@@ -67,6 +68,14 @@ public class MainPanel extends JPanel implements ActionListener {
         nowupdate = new JLabel();
         add(nowupdate);
         setmoney("0","0");
+        config = new ConfigFileManager();
+        if(ConfigFileManager.black_mode) {
+            setBackground(Color.darkGray);
+            intCombo.setBackground(Color.darkGray);
+            intCombo.setForeground(Color.WHITE);
+            money.setForeground(Color.WHITE);
+            nowupdate.setForeground(Color.WHITE);
+        }
         System.out.println("DEBUG: create main panel end");
         Timer timer = new Timer();
         TimerTask task = new TimerTask() {
@@ -128,9 +137,6 @@ public class MainPanel extends JPanel implements ActionListener {
                 webClient.waitForBackgroundJavaScript(10_000);
                 //waiting…
                 Page page = webClient.getPage(getImage(id));
-                String filepath = page.getUrl().getFile();
-                String filename = FilenameUtils.getName(filepath);
-                System.out.println(filename);
                 // Download the file.
                 InputStream inputStream = page.getWebResponse().getContentAsStream();
                 if(new File(getApplicationPath(MCEViewer.class).getParent().toString() + File.separator + "image.png").exists()){
@@ -145,17 +151,15 @@ public class MainPanel extends JPanel implements ActionListener {
                 inputStream.close();
                 outputStream.close();
 
-                ImageIcon icon=new ImageIcon(getApplicationPath(MCEViewer.class).getParent().toString() + File.separator + "image.png");
-                SwingUtilities.invokeLater(() -> {
-                    iconlabel.setIcon(icon);
-                    SwingUtilities.updateComponentTreeUI(frame);
-                });
+                ImageIcon icon = new ImageIcon(getApplicationPath(MCEViewer.class).getParent().toString() + File.separator + "image.png");
+                icon.getImage().flush();
+                SwingUtilities.invokeLater(() -> iconlabel.setIcon(icon));
             } catch (IOException | URISyntaxException e1) {
                 e1.printStackTrace();
             }
             //v2
             Calendar calendar = Calendar.getInstance();
-            SimpleDateFormat sdf = new SimpleDateFormat("最終更新: a h時mm分");
+            SimpleDateFormat sdf = new SimpleDateFormat("更新: a h時mm分");
             nowupdate.setText(sdf.format(calendar.getTime()));
             nowrun = false;
         }).start();
@@ -173,9 +177,6 @@ public class MainPanel extends JPanel implements ActionListener {
                 webClient.waitForBackgroundJavaScript(10_000);
                 //waiting…
                 Page page = webClient.getPage(getUrl(id));
-                String filepath = page.getUrl().getFile();
-                String filename = FilenameUtils.getName(filepath);
-                System.out.println(filename);
                 // Download the file.
                 InputStream inputStream = page.getWebResponse().getContentAsStream();
                 FileOutputStream outputStream = new FileOutputStream(getApplicationPath(MCEViewer.class).getParent().toString() + File.separator + "index.csv");
@@ -214,17 +215,15 @@ public class MainPanel extends JPanel implements ActionListener {
                 inputStream.close();
                 outputStream.close();
 
-                ImageIcon icon=new ImageIcon(getApplicationPath(MCEViewer.class).getParent().toString() + File.separator + "image.png");
-                SwingUtilities.invokeLater(() -> {
-                    iconlabel.setIcon(icon);
-                    SwingUtilities.updateComponentTreeUI(frame);
-                });
+                ImageIcon icon = new ImageIcon(getApplicationPath(MCEViewer.class).getParent().toString() + File.separator + "image.png");
+                icon.getImage().flush();
+                SwingUtilities.invokeLater(() -> iconlabel.setIcon(icon));
             } catch (IOException | URISyntaxException e1) {
                 e1.printStackTrace();
             }
             //v2
             Calendar calendar = Calendar.getInstance();
-            SimpleDateFormat sdf = new SimpleDateFormat("自動更新: a h時mm分");
+            SimpleDateFormat sdf = new SimpleDateFormat("更新: a h時mm分");
             nowupdate.setText(sdf.format(calendar.getTime()));
             nowrun = false;
         }).start();
@@ -232,7 +231,7 @@ public class MainPanel extends JPanel implements ActionListener {
 
     public void idCreate(){
         System.out.println("DEBUG: create ids start");
-        for(int i = 1;i <= 54;i++){
+        for(int i = 1;i <= 56;i++){
             ids[i-1] = i+"";
             System.out.println("DEBUG: create id =>"+i);
         }
