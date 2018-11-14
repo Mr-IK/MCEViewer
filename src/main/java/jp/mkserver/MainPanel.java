@@ -4,6 +4,7 @@ import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
 import org.apache.commons.io.FilenameUtils;
+import org.jfree.chart.ChartPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,6 +24,7 @@ import java.util.Timer;
 public class MainPanel extends JPanel implements ActionListener {
 
     JFrame frame;
+    JPanel jpane;
     JLabel iconlabel;
     JLabel money;
     JLabel nowupdate;
@@ -33,6 +35,7 @@ public class MainPanel extends JPanel implements ActionListener {
     String url3 = "http://man10.red/mce/image/item";
     String url4 = ".png";
     String url2 = "/index.csv";
+    String url5 = "/hour.csv";
     ConfigFileManager config;
 
     boolean nowrun = false;
@@ -41,6 +44,10 @@ public class MainPanel extends JPanel implements ActionListener {
 
     public String getUrl(String id){
         return url1+id+url2;
+    }
+
+    public String getHourUrl(String id){
+        return url1+id+url5;
     }
 
     public String getImage(String id){
@@ -69,13 +76,16 @@ public class MainPanel extends JPanel implements ActionListener {
         add(nowupdate);
         setmoney("0","0");
         config = new ConfigFileManager();
+        jpane = new JPanel();
         if(ConfigFileManager.black_mode) {
             setBackground(Color.darkGray);
             intCombo.setBackground(Color.darkGray);
+            jpane.setBackground(Color.darkGray);
             intCombo.setForeground(Color.WHITE);
             money.setForeground(Color.WHITE);
             nowupdate.setForeground(Color.WHITE);
         }
+        add(jpane,BorderLayout.SOUTH);
         System.out.println("DEBUG: create main panel end");
         Timer timer = new Timer();
         TimerTask task = new TimerTask() {
@@ -104,14 +114,9 @@ public class MainPanel extends JPanel implements ActionListener {
                 webClient.waitForBackgroundJavaScript(10_000);
                 //waiting…
                 Page page = webClient.getPage(getUrl(id));
-                String filepath = page.getUrl().getFile();
-                String filename = FilenameUtils.getName(filepath);
-                System.out.println(filename);
+                Page hourpage = webClient.getPage(getHourUrl(id));
                 // Download the file.
                 InputStream inputStream = page.getWebResponse().getContentAsStream();
-                if(new File(getApplicationPath(MCEViewer.class).getParent().toString() + File.separator + "index.csv").exists()){
-                    new File(getApplicationPath(MCEViewer.class).getParent().toString() + File.separator + "index.csv").delete();
-                }
                 FileOutputStream outputStream = new FileOutputStream(getApplicationPath(MCEViewer.class).getParent().toString() + File.separator + "index.csv");
                 int read;
                 byte[] bytes = new byte[1024];
@@ -125,6 +130,20 @@ public class MainPanel extends JPanel implements ActionListener {
 
                 String str = br.readLine();
                 setmoney(id,str);
+
+                inputStream = hourpage.getWebResponse().getContentAsStream();
+                outputStream = new FileOutputStream(getApplicationPath(MCEViewer.class).getParent().toString() + File.separator + "hour.csv");
+                bytes = new byte[1024];
+                while ((read = inputStream.read(bytes)) != -1) {
+                    outputStream.write(bytes, 0, read);
+                }
+                inputStream.close();
+                outputStream.close();
+                ChartPanel pane = ChartPanels.loadhourCSV(id);
+                if(pane != null){
+                    jpane.removeAll();
+                    jpane.add(pane,BorderLayout.CENTER);
+                }
             } catch (IOException | URISyntaxException e1) {
                 e1.printStackTrace();
             }
@@ -132,26 +151,27 @@ public class MainPanel extends JPanel implements ActionListener {
 
             //v2
             try (final WebClient webClient = new WebClient(BrowserVersion.CHROME)) {
-                webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
-                webClient.getPage(getImage(id));
-                webClient.waitForBackgroundJavaScript(10_000);
-                //waiting…
-                Page page = webClient.getPage(getImage(id));
-                // Download the file.
-                InputStream inputStream = page.getWebResponse().getContentAsStream();
-                if(new File(getApplicationPath(MCEViewer.class).getParent().toString() + File.separator + "image.png").exists()){
-                    new File(getApplicationPath(MCEViewer.class).getParent().toString() + File.separator + "image.png").delete();
+                if(!new File(getApplicationPath(MCEViewer.class).getParent().toString() + File.separator +"images").exists()){
+                    new File(getApplicationPath(MCEViewer.class).getParent().toString() + File.separator +"images").mkdir();
                 }
-                FileOutputStream outputStream = new FileOutputStream(getApplicationPath(MCEViewer.class).getParent().toString() + File.separator + "image.png");
-                int read;
-                byte[] bytes = new byte[1024];
-                while ((read = inputStream.read(bytes)) != -1) {
-                    outputStream.write(bytes, 0, read);
+                if(!new File(getApplicationPath(MCEViewer.class).getParent().toString() + File.separator +"images"+ File.separator + id+".png").exists()) {
+                    webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
+                    webClient.getPage(getImage(id));
+                    webClient.waitForBackgroundJavaScript(10_000);
+                    //waiting…
+                    Page page = webClient.getPage(getImage(id));
+                    // Download the file.
+                    InputStream inputStream = page.getWebResponse().getContentAsStream();
+                    FileOutputStream outputStream = new FileOutputStream(getApplicationPath(MCEViewer.class).getParent().toString() + File.separator +"images"+ File.separator + id+".png");
+                    int read;
+                    byte[] bytes = new byte[1024];
+                    while ((read = inputStream.read(bytes)) != -1) {
+                        outputStream.write(bytes, 0, read);
+                    }
+                    inputStream.close();
+                    outputStream.close();
                 }
-                inputStream.close();
-                outputStream.close();
-
-                ImageIcon icon = new ImageIcon(getApplicationPath(MCEViewer.class).getParent().toString() + File.separator + "image.png");
+                ImageIcon icon = new ImageIcon(getApplicationPath(MCEViewer.class).getParent().toString() + File.separator +"images"+ File.separator + id+".png");
                 icon.getImage().flush();
                 SwingUtilities.invokeLater(() -> iconlabel.setIcon(icon));
             } catch (IOException | URISyntaxException e1) {
@@ -177,6 +197,7 @@ public class MainPanel extends JPanel implements ActionListener {
                 webClient.waitForBackgroundJavaScript(10_000);
                 //waiting…
                 Page page = webClient.getPage(getUrl(id));
+                Page hourpage = webClient.getPage(getHourUrl(id));
                 // Download the file.
                 InputStream inputStream = page.getWebResponse().getContentAsStream();
                 FileOutputStream outputStream = new FileOutputStream(getApplicationPath(MCEViewer.class).getParent().toString() + File.separator + "index.csv");
@@ -192,6 +213,20 @@ public class MainPanel extends JPanel implements ActionListener {
 
                 String str = br.readLine();
                 setmoney(id,str);
+
+                inputStream = hourpage.getWebResponse().getContentAsStream();
+                outputStream = new FileOutputStream(getApplicationPath(MCEViewer.class).getParent().toString() + File.separator + "hour.csv");
+                bytes = new byte[1024];
+                while ((read = inputStream.read(bytes)) != -1) {
+                    outputStream.write(bytes, 0, read);
+                }
+                inputStream.close();
+                outputStream.close();
+                ChartPanel pane = ChartPanels.loadhourCSV(id);
+                if(pane != null){
+                    jpane.removeAll();
+                    jpane.add(pane,BorderLayout.CENTER);
+                }
             } catch (IOException | URISyntaxException e1) {
                 e1.printStackTrace();
             }
@@ -199,23 +234,27 @@ public class MainPanel extends JPanel implements ActionListener {
 
             //v2
             try (final WebClient webClient = new WebClient(BrowserVersion.CHROME)) {
-                webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
-                webClient.getPage(getImage(id));
-                webClient.waitForBackgroundJavaScript(10_000);
-                //waiting…
-                Page page = webClient.getPage(getImage(id));
-                // Download the file.
-                InputStream inputStream = page.getWebResponse().getContentAsStream();
-                FileOutputStream outputStream = new FileOutputStream(getApplicationPath(MCEViewer.class).getParent().toString() + File.separator + "image.png");
-                int read;
-                byte[] bytes = new byte[1024];
-                while ((read = inputStream.read(bytes)) != -1) {
-                    outputStream.write(bytes, 0, read);
+                if(!new File(getApplicationPath(MCEViewer.class).getParent().toString() + File.separator +"images").exists()){
+                    new File(getApplicationPath(MCEViewer.class).getParent().toString() + File.separator +"images").mkdir();
                 }
-                inputStream.close();
-                outputStream.close();
-
-                ImageIcon icon = new ImageIcon(getApplicationPath(MCEViewer.class).getParent().toString() + File.separator + "image.png");
+                if(!new File(getApplicationPath(MCEViewer.class).getParent().toString() + File.separator +"images"+ File.separator + id+".png").exists()) {
+                    webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
+                    webClient.getPage(getImage(id));
+                    webClient.waitForBackgroundJavaScript(10_000);
+                    //waiting…
+                    Page page = webClient.getPage(getImage(id));
+                    // Download the file.
+                    InputStream inputStream = page.getWebResponse().getContentAsStream();
+                    FileOutputStream outputStream = new FileOutputStream(getApplicationPath(MCEViewer.class).getParent().toString() + File.separator +"images"+ File.separator + id+".png");
+                    int read;
+                    byte[] bytes = new byte[1024];
+                    while ((read = inputStream.read(bytes)) != -1) {
+                        outputStream.write(bytes, 0, read);
+                    }
+                    inputStream.close();
+                    outputStream.close();
+                }
+                ImageIcon icon = new ImageIcon(getApplicationPath(MCEViewer.class).getParent().toString() + File.separator +"images"+ File.separator + id+".png");
                 icon.getImage().flush();
                 SwingUtilities.invokeLater(() -> iconlabel.setIcon(icon));
             } catch (IOException | URISyntaxException e1) {
@@ -241,6 +280,7 @@ public class MainPanel extends JPanel implements ActionListener {
         bal = bal.replace("\thttp://man10.red/mce/image/item"+id+".png","");
         money.setText(bal);
     }
+
 
     public static Path getApplicationPath(Class<?> cls) throws URISyntaxException {
         ProtectionDomain pd = cls.getProtectionDomain();

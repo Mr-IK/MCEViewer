@@ -9,7 +9,7 @@ public class GUImanager extends JFrame {
     public GUImanager (){
         System.out.println("DEBUG: create gui frame start");
         setTitle("MCEViewer");
-        setSize(400,100);
+        setSize(540,550);
         setLocationRelativeTo(null);
         setResizable(false);
         System.out.println("DEBUG: create gui frame 50%");

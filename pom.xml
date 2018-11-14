@@ -58,6 +58,11 @@
             <artifactId>htmlunit</artifactId>
             <version>2.33</version>
         </dependency>
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.5.0</version>
+        </dependency>
     </dependencies>
 
 </project>
