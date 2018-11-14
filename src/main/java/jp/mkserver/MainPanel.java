@@ -3,7 +3,6 @@ package jp.mkserver;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
-import org.apache.commons.io.FilenameUtils;
 import org.jfree.chart.ChartPanel;
 
 import javax.swing.*;
@@ -105,7 +104,7 @@ public class MainPanel extends JPanel implements ActionListener {
         new Thread(()->{
             nowrun = true;
             nowupdate.setText("更新中…");
-            String id = (String)intCombo.getSelectedItem();
+            String id = (intCombo.getSelectedIndex()+1)+"";
             latest_id = id;
             //v2
             try (final WebClient webClient = new WebClient(BrowserVersion.CHROME)) {
@@ -139,7 +138,12 @@ public class MainPanel extends JPanel implements ActionListener {
                 }
                 inputStream.close();
                 outputStream.close();
-                ChartPanel pane = ChartPanels.loadhourCSV(id);
+                ChartPanel pane;
+                if(ConfigFileManager.simple_chart){
+                    pane = ChartPanels.loadhourCSV_simple((String)intCombo.getSelectedItem());
+                }else{
+                    pane = ChartPanels.loadhourCSV(id);
+                }
                 if(pane != null){
                     jpane.removeAll();
                     jpane.add(pane,BorderLayout.CENTER);
@@ -186,6 +190,10 @@ public class MainPanel extends JPanel implements ActionListener {
     }
 
     public void Update(){
+        if(nowrun){
+            nowupdate.setText("自動更新失敗");
+            return;
+        }
         new Thread(()->{
             nowupdate.setText("更新中…");
             nowrun = true;
@@ -222,7 +230,12 @@ public class MainPanel extends JPanel implements ActionListener {
                 }
                 inputStream.close();
                 outputStream.close();
-                ChartPanel pane = ChartPanels.loadhourCSV(id);
+                ChartPanel pane;
+                if(ConfigFileManager.simple_chart){
+                    pane = ChartPanels.loadhourCSV_simple((String)intCombo.getSelectedItem());
+                }else{
+                    pane = ChartPanels.loadhourCSV(id);
+                }
                 if(pane != null){
                     jpane.removeAll();
                     jpane.add(pane,BorderLayout.CENTER);
@@ -270,10 +283,62 @@ public class MainPanel extends JPanel implements ActionListener {
 
     public void idCreate(){
         System.out.println("DEBUG: create ids start");
-        for(int i = 1;i <= 56;i++){
-            ids[i-1] = i+"";
-            System.out.println("DEBUG: create id =>"+i);
-        }
+        ids[0] = "1: 石";
+        ids[1] = "2: ネザーラック";
+        ids[2] = "3: 土";
+        ids[3] = "4: 砂";
+        ids[4] = "5: 砂利";
+        ids[5] = "6: ガラス";
+        ids[6] = "7: 粘土";
+        ids[7] = "8: 羊毛";
+        ids[8] = "9: 水晶ブロック";
+        ids[9] = "10: 石炭ブロック";
+        ids[10] = "11: 鉄ブロック";
+        ids[11] = "12: 金ブロック";
+        ids[12] = "13: ダイヤブロック";
+        ids[13] = "14: エメラルドブロック";
+        ids[14] = "15: レッドストーンブロック";
+        ids[15] = "16: ラピスラズリブロック";
+        ids[16] = "17: レンガ";
+        ids[17] = "18: テラコッタ";
+        ids[18] = "19: 安山岩";
+        ids[19] = "20: 閃緑岩";
+        ids[20] = "21: 花崗岩";
+        ids[21] = "22: ネザーレンガ";
+        ids[22] = "23: グロウストーン";
+        ids[23] = "24: マグマブロック";
+        ids[24] = "25: エンドストーン";
+        ids[25] = "26: シーランタン";
+        ids[26] = "27: スポンジ";
+        ids[27] = "28: 氷";
+        ids[28] = "29: エンチャント瓶";
+        ids[29] = "30: オークの原木";
+        ids[30] = "31: マツの原木";
+        ids[31] = "32: シラカバの原木";
+        ids[32] = "33: ジャングルの原木";
+        ids[33] = "34: アカシアの原木";
+        ids[34] = "35: ダークオークの原木";
+        ids[35] = "36: 本棚";
+        ids[36] = "37: シュルカーボックス";
+        ids[37] = "38: イカスミ";
+        ids[38] = "39: サトウキビ";
+        ids[39] = "40: 干し草の俵";
+        ids[40] = "41: 投票ダイヤ";
+        ids[41] = "42: 黒曜石";
+        ids[42] = "43: 火打ち石";
+        ids[43] = "44: 火薬";
+        ids[44] = "45: スライムブロック";
+        ids[45] = "46: 砂岩";
+        ids[46] = "47: 骨ブロック";
+        ids[47] = "48: ステーキ";
+        ids[48] = "49: 焼き豚";
+        ids[49] = "50: 焼き鳥";
+        ids[50] = "51: ベイクドポテト";
+        ids[51] = "52: 焼き羊肉";
+        ids[52] = "53: パン";
+        ids[53] = "54: VotingEmerald";
+        ids[54] = "55: SpecialRuby";
+        ids[55] = "56: HappyCoin";
     }
 
     public void setmoney(String id,String bal){

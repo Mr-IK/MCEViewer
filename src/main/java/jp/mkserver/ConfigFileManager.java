@@ -23,6 +23,12 @@ public class ConfigFileManager {
                 bw.write("※trueで暗く、falseで白になります。");
                 bw.newLine();
                 bw.write("black_mode=true");
+                bw.newLine();
+                bw.write("※simple_chartはチャートをシンプルにするか否かです。");
+                bw.newLine();
+                bw.write("※trueでシンプル(折れ線グラフ)、falseで細かく(キャンドルチャート)になります。");
+                bw.newLine();
+                bw.write("simple_chart=true");
                 bw.close();
             }else{
                 load();
@@ -33,6 +39,7 @@ public class ConfigFileManager {
     }
 
     public static boolean black_mode = true;
+    public static boolean simple_chart = true;
 
     public void load(){
         System.out.println("[CONFIG]コンフィグをロード中…");
@@ -44,7 +51,13 @@ public class ConfigFileManager {
                     String boor = str.replace("black_mode=", "");
                     if (!boor.equalsIgnoreCase("true")) {
                         black_mode = false;
-                        System.out.println("[CONFIG]Logファイル書き込みを無効化しました！");
+                        System.out.println("[CONFIG]ブラックモードをOFFにしました");
+                    }
+                }else if(str.startsWith("simple_chart=")) {
+                    String boor = str.replace("simple_chart=", "");
+                    if (!boor.equalsIgnoreCase("true")) {
+                        simple_chart = false;
+                        System.out.println("[CONFIG]ブラックモードをOFFにしました");
                     }
                 }
                 str = br.readLine();
